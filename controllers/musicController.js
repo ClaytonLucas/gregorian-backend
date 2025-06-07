@@ -1,8 +1,44 @@
 const Music = require('../models/music');
 
 exports.getAll = async (req, res) => {
-  const musicas = await Music.findAll();
-  res.json(musicas);
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = parseInt(req.query.offset) || 0;
+
+    const musicas = await Music.findAll({
+      limit,
+      offset,
+      order: [['title', 'ASC']], // ordena por título em ordem alfabética
+    });
+
+    res.json(musicas);
+  } catch (error) {
+    console.error('Erro ao buscar músicas:', error);
+    res.status(500).json({ error: 'Erro ao buscar músicas' });
+  }
+};
+exports.searchByTitle = async (req, res) => {
+  const { title } = req.query;
+
+  if (!title) {
+    return res.status(400).json({ error: 'Parâmetro "title" é obrigatório' });
+  }
+
+  try {
+    const musicas = await Music.findAll({
+      where: {
+        title: {
+          [require('sequelize').Op.iLike]: `%${title}%`, // busca parcial e case-insensitive
+        },
+      },
+      order: [['title', 'ASC']],
+    });
+
+    res.json(musicas);
+  } catch (error) {
+    console.error('Erro ao buscar músicas pelo título:', error);
+    res.status(500).json({ error: 'Erro ao buscar músicas pelo título' });
+  }
 };
 
 exports.getOne = async (req, res) => {
