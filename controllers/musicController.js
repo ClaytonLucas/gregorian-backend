@@ -2,13 +2,14 @@ const Music = require('../models/music');
 
 exports.getAll = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const offset = parseInt(req.query.offset) || 0;
+    const offset = (page - 1) * limit;
 
     const musicas = await Music.findAll({
       limit,
       offset,
-      order: [['title', 'ASC']], // ordena por título em ordem alfabética
+      order: [['title', 'ASC']], 
     });
 
     res.json(musicas);
@@ -17,6 +18,7 @@ exports.getAll = async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar músicas' });
   }
 };
+
 exports.searchByTitle = async (req, res) => {
   const { title } = req.query;
 
@@ -28,7 +30,7 @@ exports.searchByTitle = async (req, res) => {
     const musicas = await Music.findAll({
       where: {
         title: {
-          [require('sequelize').Op.iLike]: `%${title}%`, // busca parcial e case-insensitive
+          [require('sequelize').Op.iLike]: `%${title}%`, 
         },
       },
       order: [['title', 'ASC']],
@@ -81,7 +83,7 @@ exports.remove = async (req, res) => {
     }
 
     await musica.destroy();
-    res.status(204).send(); // ou res.json({ message: 'Música deletada com sucesso' });
+    res.status(204).send(); 
   } catch (error) {
     console.error('Erro ao deletar música:', error);
     res.status(500).json({ error: 'Erro ao deletar música' });
